@@ -14,6 +14,9 @@ public class MemoryServer {
     private final List<ClientHandler> clients;
     private int turnoActual = 0; // 0 = Jugador 1, 1 = Jugador 2
     private boolean juegoTerminado = false;
+    private int scorePlayer1 = 0;
+    private int scorePlayer2 = 0;
+
 
     public MemoryServer(int port, GameLogic gameLogic) {
         this.port = port;
@@ -145,7 +148,13 @@ public class MemoryServer {
 
                         // Comprobamos la pareja
                         if (gameLogic.comprobarSiCoinciden(filaPrimera, colPrimera, fila, col)) {
+                            if (playerId == 0) {
+                                scorePlayer1++;
+                            } else {
+                                scorePlayer2++;
+                            }
                             broadcast("¡Jugador " + (playerId + 1) + " encontró una pareja!");
+                            broadcastScore();
                         } else {
                             // Si no coincide, esperamos 1 segundo y ocultamos las cartas
                             try {
@@ -167,6 +176,21 @@ public class MemoryServer {
 
                     if (gameLogic.verificarJuegoTerminado()) {
                         broadcast("¡Juego terminado!");
+
+                        // Determinar el ganador o si hubo empate
+                        String resultado;
+                        if (scorePlayer1 > scorePlayer2) {
+                            resultado = "Ganador: Jugador 1";
+                        } else if (scorePlayer2 > scorePlayer1) {
+                            resultado = "Ganador: Jugador 2";
+                        } else {
+                            resultado = "Empate";
+                        }
+
+                        // Crear mensaje final con el marcador
+                        String mensajeFinal = resultado + "\nMarcador final: Jugador 1: " + scorePlayer1 + " | Jugador 2: " + scorePlayer2;
+                        broadcast(mensajeFinal);
+
                         juegoTerminado = true;
                     }
                 }
@@ -177,9 +201,14 @@ public class MemoryServer {
             }
         }
     }
+    private void broadcastScore() {
+        String scoreMsg = "SCORE: Jugador 1: " + scorePlayer1 + " | Jugador 2: " + scorePlayer2;
+        broadcast(scoreMsg);
+    }
+
 
     public static void main(String[] args) {
-        int filas = 5, columnas = 8;
+        int filas = 4, columnas = 8;
         GameLogic gameLogic = new GameLogic(filas, columnas);
         MemoryServer server = new MemoryServer(12345, gameLogic);
         server.start();

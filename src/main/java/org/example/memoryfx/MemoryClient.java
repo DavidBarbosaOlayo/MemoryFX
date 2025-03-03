@@ -16,13 +16,17 @@ public class MemoryClient {
     private BufferedReader in;
     private final TableroCartasFX tablero;
     private final Label headerLabel;
+    private final Label scoreLabel;   // Label para el marcador
+    private final Label identityLabel; // Nuevo label para la identidad del jugador
     private Thread listenerThread;
 
-    public MemoryClient(String host, int port, TableroCartasFX tablero, Label headerLabel) {
+    public MemoryClient(String host, int port, TableroCartasFX tablero, Label headerLabel, Label scoreLabel, Label identityLabel) {
         this.host = host;
         this.port = port;
         this.tablero = tablero;
         this.headerLabel = headerLabel;
+        this.scoreLabel = scoreLabel;
+        this.identityLabel = identityLabel;
     }
 
     public void connect() {
@@ -52,13 +56,25 @@ public class MemoryClient {
                 while ((line = in.readLine()) != null) {
                     final String msg = line;
                     Platform.runLater(() -> {
-                        // Si el mensaje contiene el delimitador '#' asumimos que es la representación del tablero
-                        if (msg.contains("#")) {
-                            // Convertimos el '#' de vuelta a saltos de línea
+                        // Si el mensaje comienza con "Bienvenido," actualizamos el label de identidad
+                        if (msg.startsWith("Bienvenido,")) {
+                            identityLabel.setText(msg);
+                        } else if (msg.startsWith("SCORE:")) {
+                            // Actualizamos el marcador. Se espera un mensaje en el formato "SCORE: Jugador 1: 1 | Jugador 2: 0"
+                            scoreLabel.setText(msg.substring("SCORE:".length()).trim());
+                        } else if (msg.contains("#")) {
+                            // Mensaje que representa el tablero
                             String boardStr = msg.replace("#", "\n");
                             tablero.updateFromServerMessage(boardStr);
                         } else {
+                            // Otros mensajes se muestran en el header
                             headerLabel.setText(msg);
+                            if (msg.startsWith("Ganador:") || msg.startsWith("Empate")) {
+                                Alert alert = new Alert(Alert.AlertType.INFORMATION, msg, ButtonType.OK);
+                                alert.setTitle("Fin del Juego");
+                                alert.setHeaderText("Resultado Final");
+                                alert.showAndWait();
+                            }
                         }
                     });
                 }
@@ -69,5 +85,4 @@ public class MemoryClient {
         listenerThread.setDaemon(true);
         listenerThread.start();
     }
-
 }
