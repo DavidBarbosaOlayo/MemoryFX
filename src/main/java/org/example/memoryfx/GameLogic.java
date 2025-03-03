@@ -23,25 +23,22 @@ public class GameLogic {
         tablero = new String[filas][columnas];
         revelado = new boolean[filas][columnas];
 
-        // Crear parejas de nombres de archivos de imagen
+        // Crear parejas de nombres de imagen
         List<String> cartas = new ArrayList<>();
         int parejasTotales = (filas * columnas) / 2;
         for (int i = 1; i <= parejasTotales; i++) {
-            // Se espera que en resources/assets estén imágenes nombradas card1.png, card2.png, etc.
             String fileName = "card" + i + ".png";
             cartas.add(fileName);
             cartas.add(fileName);
         }
 
-        // Mezclamos las cartas
         Collections.shuffle(cartas);
 
-        // Llenamos el tablero con los nombres de imagen
         int indice = 0;
         for (int i = 0; i < filas; i++) {
             for (int j = 0; j < columnas; j++) {
                 tablero[i][j] = cartas.get(indice++);
-                revelado[i][j] = false; // inicialmente están boca abajo todas
+                revelado[i][j] = false;
             }
         }
     }

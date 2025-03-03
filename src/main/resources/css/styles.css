@@ -1,8 +1,6 @@
-/* Archivo: styles.css */
-
 /* Fondo general para la aplicación con degradado */
 .root {
--fx-background-color: linear-gradient(to bottom right, #4a2e2e, #1e1e1e);
+    -fx-background-color: linear-gradient(to bottom right, #4a2e2e, #1e1e1e);
 }
 
 /* Estilo para todos los labels (encabezado, identidad, marcador) */
@@ -32,10 +30,10 @@
     -fx-background-size: cover;
     -fx-background-repeat: no-repeat;
     -fx-background-position: center;
-    -fx-text-fill: transparent; /* Oculta el texto */
+    -fx-text-fill: transparent;
 }
 
-/* Cuando se hace hover en una carta oculta, se baja la opacidad para dar efecto */
+/* Hover en carta oculta */
 .card.card-back:hover {
     -fx-opacity: 0.7;
 }
@@ -46,9 +44,26 @@
     -fx-text-fill: #333;
 }
 
-/* Efecto hover para las cartas en general (cuando no son del reverso) */
+/* Hover para cartas (cuando no son del reverso) */
 .card:hover {
     -fx-background-color: linear-gradient(to bottom, #fefefe, #d4d4d4);
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 8, 0.0, 0, 4);
     -fx-cursor: hand;
 }
+
+.menu-button {
+    -fx-min-width: 180px;
+    -fx-background-color: linear-gradient(to right, #B8860B, #DAA520);
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+    -fx-font-family: "Segoe UI", sans-serif;
+    -fx-padding: 10 20;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+}
+.menu-button:hover {
+    -fx-background-color: linear-gradient(to right, #DAA520, #B8860B);
+    -fx-cursor: hand;
+}
+
+

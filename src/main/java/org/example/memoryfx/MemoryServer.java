@@ -1,6 +1,5 @@
 package org.example.memoryfx;
 
-
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -17,7 +16,6 @@ public class MemoryServer {
     private int scorePlayer1 = 0;
     private int scorePlayer2 = 0;
 
-
     public MemoryServer(int port, GameLogic gameLogic) {
         this.port = port;
         this.gameLogic = gameLogic;
@@ -28,7 +26,7 @@ public class MemoryServer {
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             System.out.println("Servidor iniciado en el puerto " + port);
 
-            // Esperamos a que se conecten 2 clientes
+            // Esperar a que se conecten 2 clientes
             while (clients.size() < 2) {
                 Socket clientSocket = serverSocket.accept();
                 ClientHandler handler = new ClientHandler(clientSocket, clients.size());
@@ -37,7 +35,7 @@ public class MemoryServer {
                 System.out.println("Jugador conectado: " + handler.getPlayerId());
             }
 
-            // Cuando están conectados ambos jugadores, enviamos mensaje inicial
+            // Enviar mensaje inicial y tablero
             broadcast("¡Juego iniciado! Turno del Jugador 1");
             broadcastTablero();
 
@@ -46,7 +44,6 @@ public class MemoryServer {
         }
     }
 
-    // Envía un mensaje a todos los clientes
     private void broadcast(String message) {
         for (ClientHandler handler : clients) {
             handler.sendMessage(message);
@@ -60,8 +57,6 @@ public class MemoryServer {
         System.out.println(boardStr);
     }
 
-
-    // Genera una representación textual del tablero
     private String getBoardString() {
         StringBuilder sb = new StringBuilder();
         String[][] tablero = gameLogic.getTablero();
@@ -80,15 +75,12 @@ public class MemoryServer {
         return sb.toString();
     }
 
-    // Clase interna que maneja a cada cliente conectado
     private class ClientHandler implements Runnable {
         private final Socket socket;
         private final int playerId;
         private final PrintWriter out;
         private final BufferedReader in;
-
-        // Variables para llevar la cuenta de la jugada actual
-        private int jugadaActual = 0; // 0 = esperando primera jugada, 1 = esperando segunda
+        private int jugadaActual = 0;
         private int filaPrimera = -1, colPrimera = -1;
 
         public ClientHandler(Socket socket, int playerId) throws IOException {
@@ -113,10 +105,8 @@ public class MemoryServer {
             try {
                 String inputLine;
                 while (!juegoTerminado && (inputLine = in.readLine()) != null) {
-                    // Esperamos mensajes con formato "MOVE fila columna"
                     if (!inputLine.startsWith("MOVE")) continue;
 
-                    // Si no es el turno de este jugador, se ignoran los movimientos
                     if (playerId != turnoActual) {
                         sendMessage("No es tu turno.");
                         continue;
@@ -128,7 +118,6 @@ public class MemoryServer {
                     int col = Integer.parseInt(parts[2]);
 
                     if (jugadaActual == 0) {
-                        // Primera jugada: se intenta voltear la carta
                         if (!gameLogic.voltearCarta(fila, col)) {
                             sendMessage("Movimiento inválido o carta ya revelada. Intenta otra vez.");
                             continue;
@@ -139,14 +128,12 @@ public class MemoryServer {
                         broadcastTablero();
                         sendMessage("Esperando tu segunda jugada.");
                     } else {
-                        // Segunda jugada: se voltea la carta y se comprueba si hay pareja
                         if (!gameLogic.voltearCarta(fila, col)) {
                             sendMessage("Movimiento inválido o carta ya revelada. Intenta otra vez.");
                             continue;
                         }
                         broadcastTablero();
 
-                        // Comprobamos la pareja
                         if (gameLogic.comprobarSiCoinciden(filaPrimera, colPrimera, fila, col)) {
                             if (playerId == 0) {
                                 scorePlayer1++;
@@ -156,7 +143,6 @@ public class MemoryServer {
                             broadcast("¡Jugador " + (playerId + 1) + " encontró una pareja!");
                             broadcastScore();
                         } else {
-                            // Si no coincide, esperamos 1 segundo y ocultamos las cartas
                             try {
                                 Thread.sleep(1000);
                             } catch (InterruptedException ex) {
@@ -164,11 +150,9 @@ public class MemoryServer {
                             }
                             gameLogic.esconderCartas(filaPrimera, colPrimera, fila, col);
                             broadcastTablero();
-                            // Cambiamos turno
                             turnoActual = (turnoActual + 1) % 2;
                             broadcast("Turno del Jugador " + (turnoActual + 1));
                         }
-                        // Reiniciamos la jugada para este turno
                         jugadaActual = 0;
                         filaPrimera = -1;
                         colPrimera = -1;
@@ -176,8 +160,6 @@ public class MemoryServer {
 
                     if (gameLogic.verificarJuegoTerminado()) {
                         broadcast("¡Juego terminado!");
-
-                        // Determinar el ganador o si hubo empate
                         String resultado;
                         if (scorePlayer1 > scorePlayer2) {
                             resultado = "Ganador: Jugador 1";
@@ -186,11 +168,8 @@ public class MemoryServer {
                         } else {
                             resultado = "Empate";
                         }
-
-                        // Crear mensaje final con el marcador
                         String mensajeFinal = resultado + "\nMarcador final: Jugador 1: " + scorePlayer1 + " | Jugador 2: " + scorePlayer2;
                         broadcast(mensajeFinal);
-
                         juegoTerminado = true;
                     }
                 }
@@ -201,17 +180,9 @@ public class MemoryServer {
             }
         }
     }
+
     private void broadcastScore() {
         String scoreMsg = "SCORE: Jugador 1: " + scorePlayer1 + " | Jugador 2: " + scorePlayer2;
         broadcast(scoreMsg);
     }
-
-
-    public static void main(String[] args) {
-        int filas = 4, columnas = 8;
-        GameLogic gameLogic = new GameLogic(filas, columnas);
-        MemoryServer server = new MemoryServer(12345, gameLogic);
-        server.start();
-    }
 }
-
