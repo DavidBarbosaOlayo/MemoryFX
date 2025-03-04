@@ -100,7 +100,7 @@ public class MainMenu extends Application {
         int filas = Integer.parseInt(parts[0]);
         int columnas = Integer.parseInt(parts[1]);
 
-        // Creamos la lógica del juego y el tablero (la interfaz se crea igual que en MemoryApp)
+        // Creamos la lógica del juego y el tablero
         GameLogic gameLogic = new GameLogic(filas, columnas);
         TableroCartasFX tablero = new TableroCartasFX(filas, columnas);
 

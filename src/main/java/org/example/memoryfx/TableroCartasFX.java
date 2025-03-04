@@ -67,7 +67,6 @@ public class TableroCartasFX extends GridPane {
     }
 
     private void cargarImagenes() {
-        // Asumimos imágenes desde card1.png hasta cardN.png, donde N = (filas * columnas) / 2
         int parejasTotales = (filas * columnas) / 2;
         for (int i = 1; i <= parejasTotales; i++) {
             String fileName = "card" + i + ".png";
